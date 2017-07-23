@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="4" assertions="535" errors="0" failures="0" skipped="0" time="43.579444">
+    <testsuite name="Container" tests="4" assertions="535" errors="0" failures="0" skipped="0" time="43.579444">
+      <testsuite name="Tests\ContainerTest" file="/home/git/container/tests/ContainerTest.php" tests="4" assertions="535" errors="0" failures="0" skipped="0" time="43.579444">
+        <testcase name="testShouldAddElement" class="Tests\ContainerTest" classname="Tests.ContainerTest" file="/home/git/container/tests/ContainerTest.php" line="77" assertions="12" time="0.011944"/>
+        <testcase name="testShouldClearContainer" class="Tests\ContainerTest" classname="Tests.ContainerTest" file="/home/git/container/tests/ContainerTest.php" line="108" assertions="503" time="43.543567"/>
+        <testcase name="testShouldMoveElementsToParallelsIfItNeeded" class="Tests\ContainerTest" classname="Tests.ContainerTest" file="/home/git/container/tests/ContainerTest.php" line="133" assertions="8" time="0.013480"/>
+        <testcase name="testShouldHaveConstantContainerDir" class="Tests\ContainerTest" classname="Tests.ContainerTest" file="/home/git/container/tests/ContainerTest.php" line="163" assertions="12" time="0.010453"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
