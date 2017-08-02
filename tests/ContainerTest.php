@@ -178,6 +178,88 @@ class ContainerTest extends TestCase
 	    } //end testShouldHaveConstantContainerDir()
 
 
+	/**
+	 * Should allow make processes always with default toggle
+	 *
+	 * @return void
+	 */
+
+	public function testShouldAllowMakeProcessesAlwaysWithDefaultToggle()
+	    {
+		define("CONTAINER_DIR", __DIR__ . "/container");
+		$container = new Container("anyname");
+
+		for ($i = 0; $i < 12; $i++)
+		    {
+			$container->add("data" . $i);
+		    }
+
+		foreach ($container as $element)
+		    {
+			$time = time();
+			$this->assertTrue(file_exists(__DIR__ . "/container/" . $element["container"] . "/" . $element["id"]));
+			$secondtime = time();
+			$this->assertEquals($time, $secondtime);
+		    } //end foreach
+
+	    } //end testShouldAllowMakeProcessesAlwaysWithDefaultToggle()
+
+
+	/**
+	 * Should allow make process as decide the CPU toggle
+	 *
+	 * @return void
+	 */
+
+	public function testShouldAllowMakeProcessAsDecideTheCpuToggle()
+	    {
+		define("CONTAINER_DIR", __DIR__ . "/container");
+		define("TOGGLE", \Container\Toggles\CPUToggle::class);
+		$container = new Container("anyname");
+
+		for ($i = 0; $i < 12; $i++)
+		    {
+			$container->add("data" . $i);
+		    }
+
+		foreach ($container as $element)
+		    {
+			$load   = sys_getloadavg();
+			$sum    = 0;
+			foreach ($load as $value)
+			    {
+				$sum += $value;
+			    } //end foreach
+
+			$middle = $value/3;
+
+			if ($middle <= 15)
+			    {
+				$expected = 0;
+			    }
+			else if ($middle > 15 && $middle <= 30)
+			    {
+				$expected = 5;
+			    }
+			else if ($middle > 30 && $middle <= 50)
+			    {
+				$expected = 10;
+			    }
+			else
+			    {
+				$expected = 60;
+			    } //end if
+
+			$time = time();
+			$exp  = $time + $expected;
+			$this->assertTrue(file_exists(__DIR__ . "/container/" . $element["container"] . "/" . $element["id"]));
+			$secondtime = time();
+			$this->assertEquals($exp, $secondtime);
+		    } //end foreach
+
+	    } //end ShouldAllowMakeProcessAsDecideTheCpuToggle()
+
+
     } //end class
 
 ?>

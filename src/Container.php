@@ -3,6 +3,8 @@
 namespace AdService;
 
 use \Countable;
+use \Container\Toggles\Toggle;
+use \Container\Throttle;
 use \DateTime;
 use \DateTimezone;
 use \DirectoryIterator;
@@ -48,6 +50,14 @@ class Container implements Iterator, Countable
 	private $_position;
 
 	/**
+	 * Throttle
+	 *
+	 * @var Throttle
+	 */
+	private $_throttle;
+
+
+	/**
 	 * Prepare container to work
 	 *
 	 * @param string $name Name of current container
@@ -57,6 +67,18 @@ class Container implements Iterator, Countable
 
 	public function __construct(string $name, $parallels = 1)
 	    {
+		$this->_throttle = new Throttle();
+
+		if (defined("TOGGLE") === true)
+		    {
+			if (TOGGLE instanceof Toggle)
+			    {
+				$this->_throttle = new Throttle(TOGGLE);
+			    } //end if
+
+		    } //end if
+
+
 		$this->_parallels = $parallels;
 
 		$this->_name    = $name;
@@ -266,6 +288,7 @@ class Container implements Iterator, Countable
 
 	public function current():array
 	    {
+		$this->_throttle->run();
 		$id = $this->_order[$this->_position];
 		return $this->_convertTime(unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . "/" . $id))));
 	    } //end current()
