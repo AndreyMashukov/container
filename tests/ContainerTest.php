@@ -222,41 +222,43 @@ class ContainerTest extends TestCase
 			$container->add("data" . $i);
 		    }
 
-		foreach ($container as $element)
+		$load   = sys_getloadavg();
+		$sum    = 0;
+		foreach ($load as $value)
 		    {
-			$load   = sys_getloadavg();
-			$sum    = 0;
-			foreach ($load as $value)
-			    {
-				$sum += $value;
-			    } //end foreach
-
-			$middle = $value/3;
-
-			if ($middle <= 15)
-			    {
-				$expected = 0;
-			    }
-			else if ($middle > 15 && $middle <= 30)
-			    {
-				$expected = 5;
-			    }
-			else if ($middle > 30 && $middle <= 50)
-			    {
-				$expected = 10;
-			    }
-			else
-			    {
-				$expected = 60;
-			    } //end if
-
-			$time = time();
-			$exp  = $time + $expected;
-			$this->assertTrue(file_exists(__DIR__ . "/container/" . $element["container"] . "/" . $element["id"]));
-			$secondtime = time();
-			$this->assertEquals($exp, $secondtime);
+			$sum += $value;
 		    } //end foreach
 
+		$middle = $sum/3;
+
+		if ($middle <= 15)
+		    {
+			$expected = 0;
+		    }
+		else if ($middle > 15 && $middle <= 30)
+		    {
+		$expected = 5;
+		    }
+		else if ($middle > 30 && $middle <= 50)
+		    {
+			$expected = 10;
+		    }
+		else
+		    {
+			$expected = 60;
+		    } //end if
+
+		$time = time();
+		$exp  = $time + $expected;
+
+		foreach ($container as $element)
+		    {
+			$this->assertTrue(file_exists(__DIR__ . "/container/" . $element["container"] . "/" . $element["id"]));
+			$secondtime = time();
+			break;
+		    } //end foreach
+
+		$this->assertEquals($exp, $secondtime);
 	    } //end ShouldAllowMakeProcessAsDecideTheCpuToggle()
 
 

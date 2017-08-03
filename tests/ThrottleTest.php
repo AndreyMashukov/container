@@ -45,7 +45,7 @@ class AvitoPhoneTest extends TestCase
 			$sum += $value;
 		    } //end foreach
 
-		$middle = $value/3;
+		$middle = $sum/3;
 
 		if ($middle <= 15)
 		    {
