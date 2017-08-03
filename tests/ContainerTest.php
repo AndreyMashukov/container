@@ -111,14 +111,14 @@ class ContainerTest extends TestCase
 
 		$xml = file_get_contents(__DIR__ . "/datasets/xml/1");
 
-		for ($i = 0; $i < 500; $i++)
+		for ($i = 0; $i < 100; $i++)
 		    {
 			$this->assertTrue($container->add($xml));
 		    }
 
-		$this->assertEquals(500, count($container));
+		$this->assertEquals(100, count($container));
 		$container = new Container("anyname");
-		$this->assertEquals(500, count($container));
+		$this->assertEquals(100, count($container));
 		$container->clear();
 		$this->assertEquals(0, count($container));
 	    } //end testShouldClearContainer()
@@ -179,12 +179,12 @@ class ContainerTest extends TestCase
 
 
 	/**
-	 * Should allow make processes always with default toggle
+	 * Should allow make processes always with default sensor
 	 *
 	 * @return void
 	 */
 
-	public function testShouldAllowMakeProcessesAlwaysWithDefaultToggle()
+	public function testShouldAllowMakeProcessesAlwaysWithDefaultSensor()
 	    {
 		define("CONTAINER_DIR", __DIR__ . "/container");
 		$container = new Container("anyname");
@@ -202,19 +202,19 @@ class ContainerTest extends TestCase
 			$this->assertEquals($time, $secondtime);
 		    } //end foreach
 
-	    } //end testShouldAllowMakeProcessesAlwaysWithDefaultToggle()
+	    } //end testShouldAllowMakeProcessesAlwaysWithDefaultSensor()
 
 
 	/**
-	 * Should allow make process as decide the CPU toggle
+	 * Should allow make process as decide the CPU sensor
 	 *
 	 * @return void
 	 */
 
-	public function testShouldAllowMakeProcessAsDecideTheCpuToggle()
+	public function testShouldAllowMakeProcessAsDecideTheCpuSensor()
 	    {
 		define("CONTAINER_DIR", __DIR__ . "/container");
-		define("TOGGLE", \Container\Toggles\CPUToggle::class);
+		define("CONTAINER_SENSOR", \Container\Sensors\CPUSensor::class);
 		$container = new Container("anyname");
 
 		for ($i = 0; $i < 12; $i++)
@@ -259,7 +259,7 @@ class ContainerTest extends TestCase
 		    } //end foreach
 
 		$this->assertEquals($exp, $secondtime);
-	    } //end ShouldAllowMakeProcessAsDecideTheCpuToggle()
+	    } //end ShouldAllowMakeProcessAsDecideTheCpuSensor()
 
 
     } //end class

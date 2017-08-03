@@ -2,11 +2,11 @@
 
 namespace Tests;
 
-use \Container\Toggles\DefaultToggle as Toggle;
+use \Container\Sensors\DefaultSensor as Sensor;
 use \PHPUnit\Framework\TestCase;
 use \SimpleXMLElement;
 
-class DefaultToggleTest extends TestCase
+class DefaultSensorTest extends TestCase
     {
 
 	/**
@@ -17,8 +17,8 @@ class DefaultToggleTest extends TestCase
 
 	public function testShouldAlwaysReturnZero()
 	    {
-		$toggle = new Toggle();
-		$this->assertEquals(0, $toggle->calculate());
+		$sensor = new Sensor();
+		$this->assertEquals(0, $sensor::calculate());
 	    } //end testShouldAlwaysReturnZero()
 
 

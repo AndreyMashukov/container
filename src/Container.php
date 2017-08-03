@@ -3,8 +3,8 @@
 namespace AdService;
 
 use \Countable;
-use \Container\Toggles\Toggle;
-use \Container\Throttle;
+use \Container\Sensors\Sensor;
+use \Container\Throttler;
 use \DateTime;
 use \DateTimezone;
 use \DirectoryIterator;
@@ -50,11 +50,11 @@ class Container implements Iterator, Countable
 	private $_position;
 
 	/**
-	 * Throttle
+	 * Throttler
 	 *
-	 * @var Throttle
+	 * @var Throttler
 	 */
-	private $_throttle;
+	private $_throttler;
 
 
 	/**
@@ -67,13 +67,15 @@ class Container implements Iterator, Countable
 
 	public function __construct(string $name, $parallels = 1)
 	    {
-		$this->_throttle = new Throttle();
+		$this->_throttler = new Throttler();
 
-		if (defined("TOGGLE") === true)
+		if (defined("CONTAINER_SENSOR") === true)
 		    {
-			if (TOGGLE instanceof Toggle)
+			$constantsensor = CONTAINER_SENSOR;
+			$sensor         = new $constantsensor();
+			if ($sensor instanceof Sensor)
 			    {
-				$this->_throttle = new Throttle(TOGGLE);
+				$this->_throttler = new Throttler($sensor);
 			    } //end if
 
 		    } //end if
@@ -288,7 +290,7 @@ class Container implements Iterator, Countable
 
 	public function current():array
 	    {
-		$this->_throttle->run();
+		$this->_throttler->run();
 		$id = $this->_order[$this->_position];
 		return $this->_convertTime(unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . "/" . $id))));
 	    } //end current()

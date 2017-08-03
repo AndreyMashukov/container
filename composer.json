@@ -1,6 +1,6 @@
 {
     "name": "andrey-mashukov/container",
-    "keywords": ["queue", "data container", "data transfer"],
+    "keywords": ["queue", "datacontainer", "datatransfer"],
     "homepage": "https://github.com/AndreyMashukov/container",
     "description": "Queue for data transfer",
     "license": "MIT",
@@ -15,7 +15,7 @@
         "psr-4" : {
             "AdService\\": ["src"],
             "Container\\": ["src"],
-            "Container\\Toggles\\": ["src"]
+            "Container\\Sensors\\": ["src"]
         }
     },
     "require": {

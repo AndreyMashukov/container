@@ -1,8 +1,8 @@
 <?php
 
-namespace Container\Toggles;
+namespace Container\Sensors;
 
-abstract class Toggle
+abstract class Sensor
     {
 
 	/**
@@ -11,7 +11,7 @@ abstract class Toggle
 	 * @retutn int Seconds to sleep
 	 */
 
-	abstract public function calculate():int;
+	abstract public static function calculate():int;
 
     } //end class
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Container\Toggles;
+namespace Container\Sensors;
 
-class DefaultToggle extends Toggle
+class DefaultSensor extends Sensor
     {
 
 	/**
@@ -11,7 +11,7 @@ class DefaultToggle extends Toggle
 	 * @retutn int Seconds to sleep
 	 */
 
-	public function calculate():int
+	public static function calculate():int
 	    {
 		return 0;
 	    } //end calculate()

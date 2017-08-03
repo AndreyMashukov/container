@@ -2,8 +2,8 @@
 
 namespace Tests;
 
-use \Container\Throttle;
-use \Container\Toggles\CPUToggle;
+use \Container\Throttler;
+use \Container\Sensors\CPUSensor;
 use \PHPUnit\Framework\TestCase;
 use \SimpleXMLElement;
 
@@ -11,32 +11,32 @@ use \SimpleXMLElement;
   * @runTestsInSeparateProcesses
   */
 
-class AvitoPhoneTest extends TestCase
+class ThrottlerTest extends TestCase
     {
 
 	/**
-	 * Should allow make processes always with default toggle
+	 * Should allow make processes always with default sensor
 	 *
 	 * @return void
 	 */
 
-	public function testShouldAllowMakeProcessesAlwaysWithDefaultToggle()
+	public function testShouldAllowMakeProcessesAlwaysWithDefaultSensor()
 	    {
-		$throttle = new Throttle();
-		$time     = time();
-		$throttle->run();
+		$throttler = new Throttler();
+		$time      = time();
+		$throttler->run();
 		$secondtime = time();
 		$this->assertEquals($time, $secondtime);
-	    } //end testShouldAllowMakeProcessesAlwaysWithDefaultToggle()
+	    } //end testShouldAllowMakeProcessesAlwaysWithDefaultSensor()
 
 
 	/**
-	 * Should allow make process as decide the CPU toggle
+	 * Should allow make process as decide the CPU sensor
 	 *
 	 * @return void
 	 */
 
-	public function testShouldAllowMakeProcessAsDecideTheCpuToggle()
+	public function testShouldAllowMakeProcessAsDecideTheCpuSensor()
 	    {
 		$load   = sys_getloadavg();
 		$sum    = 0;
@@ -64,13 +64,13 @@ class AvitoPhoneTest extends TestCase
 			$expected = 60;
 		    } //end if
 
-		$throttle = new Throttle(new CPUToggle());
-		$time     = time();
-		$exp      = $time + $expected;
-		$throttle->run();
+		$throttler = new Throttler(new CPUSensor());
+		$time      = time();
+		$exp       = $time + $expected;
+		$throttler->run();
 		$secondtime = time();
 		$this->assertEquals($exp, $secondtime);
-	    } //end ShouldAllowMakeProcessAsDecideTheCpuToggle()
+	    } //end ShouldAllowMakeProcessAsDecideTheCpuSensor()
 
 
     } //end class

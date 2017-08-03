@@ -1,8 +1,8 @@
 <?php
 
-namespace Container\Toggles;
+namespace Container\Sensors;
 
-class CPUToggle extends Toggle
+class CPUSensor extends Sensor
     {
 
 	/**
@@ -11,16 +11,16 @@ class CPUToggle extends Toggle
 	 * @retutn int Seconds to sleep
 	 */
 
-	public function calculate():int
+	public static function calculate():int
 	    {
-		$load   = sys_getloadavg();
-		$sum    = 0;
+		$load = sys_getloadavg();
+		$sum  = 0;
 		foreach ($load as $value)
 		    {
 			$sum += $value;
 		    } //end foreach
 
-		$middle = $sum/3;
+		$middle = ($sum / 3);
 
 		if ($middle <= 15)
 		    {
