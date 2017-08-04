@@ -214,7 +214,7 @@ class ContainerTest extends TestCase
 	public function testShouldAllowMakeProcessAsDecideTheCpuSensor()
 	    {
 		define("CONTAINER_DIR", __DIR__ . "/container");
-		define("CONTAINER_SENSOR", \Container\Sensors\CPUSensor::class);
+		define("CONTAINER_SENSOR", \LoadBalance\Sensors\CPUSensor::class);
 		$container = new Container("anyname");
 
 		for ($i = 0; $i < 12; $i++)
@@ -222,24 +222,18 @@ class ContainerTest extends TestCase
 			$container->add("data" . $i);
 		    }
 
-		$load   = sys_getloadavg();
-		$sum    = 0;
-		foreach ($load as $value)
-		    {
-			$sum += $value;
-		    } //end foreach
+		$load    = sys_getloadavg();
+		$current = $load[0];
 
-		$middle = $sum/3;
-
-		if ($middle <= 15)
+		if ($current <= 15)
 		    {
 			$expected = 0;
 		    }
-		else if ($middle > 15 && $middle <= 30)
+		else if ($current > 15 && $current <= 30)
 		    {
-		$expected = 5;
+			$expected = 5;
 		    }
-		else if ($middle > 30 && $middle <= 50)
+		else if ($current > 30 && $current <= 50)
 		    {
 			$expected = 10;
 		    }

@@ -3,8 +3,8 @@
 namespace AdService;
 
 use \Countable;
-use \Container\Sensors\Sensor;
-use \Container\Throttler;
+use \LoadBalance\Sensors\Sensor;
+use \LoadBalance\Throttler;
 use \DateTime;
 use \DateTimezone;
 use \DirectoryIterator;
