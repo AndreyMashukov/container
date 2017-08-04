@@ -155,6 +155,36 @@ class ContainerTest extends TestCase
 
 
 	/**
+	 * Should move elements to parallels if it needed and define parallel as roundrobin
+	 *
+	 * @return void
+	 */
+
+	public function testShouldMoveElementsToParallelsIfItNeededAndDefineParallelAsRoundrobin()
+	    {
+		$container = new Container("anyname", 6);
+
+		for ($i = 0; $i < 12; $i++)
+		    {
+			$container->add("data" . $i, true);
+		    }
+
+		$container = new Container("anyname_0");
+		$this->assertEquals(0, count($container));
+
+		$container = new Container("anyname_7");
+		$this->assertEquals(0, count($container));
+
+		for ($i = 1; $i <= 6; $i++)
+		    {
+			$container = new Container("anyname_" . $i);
+			$this->assertEquals(2, count($container));
+		    }
+
+	    } //end testShouldMoveElementsToParallelsIfItNeededAndDefineParallelAsRoundrobin()
+
+
+	/**
 	 * Should have constant container_dir
 	 *
 	 * @rerurn void

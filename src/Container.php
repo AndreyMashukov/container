@@ -56,6 +56,12 @@ class Container implements Iterator, Countable
 	 */
 	private $_throttler;
 
+	/**
+	 * Last parallel
+	 *
+	 * @var int
+	 */
+	private $_parallel = 1;
 
 	/**
 	 * Prepare container to work
@@ -115,12 +121,13 @@ class Container implements Iterator, Countable
 	/**
 	 * Add element
 	 *
-	 * @param mixed $data Any data to container
+	 * @param mixed $data       Any data to container
+	 * @param bool  $roundrobin If not need check count in adding elements
 	 *
 	 * @return bool Operation result
 	 */
 
-	public function add($data):bool
+	public function add($data, bool $roundrobin = false):bool
 	    {
 		if ($this->_parallels === 1)
 		    {
@@ -128,8 +135,28 @@ class Container implements Iterator, Countable
 		    }
 		else
 		    {
-			$parallel = $this->_getParallel();
+			if ($roundrobin === false)
+			    {
+				$parallel = $this->_getParallel();
+			    }
+			else
+			    {
+				$parallel = $this->_parallel;
+				if ($parallel < $this->_parallels)
+				    {
+					$this->_parallel++;
+				    }
+				else
+				    {
+					$this->_parallel = 1;
+				    } //end if
+
+				$parallel = "_" . $parallel;
+
+			    } //end if
+
 			$this->_addToStorage($data, $parallel);
+
 		    } //end if
 
 		return true;
