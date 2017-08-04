@@ -37,6 +37,21 @@ class ContainerTest extends TestCase
 		$c = new Container("anyname_6");
 		$c->clear();
 
+		$c = new Container("anyname_2");
+		$c->clear();
+		$c = new Container("anyname_2_1");
+		$c->clear();
+		$c = new Container("anyname_2_2");
+		$c->clear();
+		$c = new Container("anyname_2_3");
+		$c->clear();
+		$c = new Container("anyname_2_4");
+		$c->clear();
+		$c = new Container("anyname_2_5");
+		$c->clear();
+		$c = new Container("anyname_2_6");
+		$c->clear();
+
 		parent::setUp();
 	    } //end setUp()
 
@@ -62,6 +77,21 @@ class ContainerTest extends TestCase
 		$c = new Container("anyname_5");
 		$c->clear();
 		$c = new Container("anyname_6");
+		$c->clear();
+
+		$c = new Container("anyname_2");
+		$c->clear();
+		$c = new Container("anyname_2_1");
+		$c->clear();
+		$c = new Container("anyname_2_2");
+		$c->clear();
+		$c = new Container("anyname_2_3");
+		$c->clear();
+		$c = new Container("anyname_2_4");
+		$c->clear();
+		$c = new Container("anyname_2_5");
+		$c->clear();
+		$c = new Container("anyname_2_6");
 		$c->clear();
 
 		parent::tearDown();
@@ -162,22 +192,22 @@ class ContainerTest extends TestCase
 
 	public function testShouldMoveElementsToParallelsIfItNeededAndDefineParallelAsRoundrobin()
 	    {
-		$container = new Container("anyname", 6);
+		$container = new Container("anyname_2", 6);
 
 		for ($i = 0; $i < 12; $i++)
 		    {
 			$container->add("data" . $i, true);
 		    }
 
-		$container = new Container("anyname_0");
+		$container = new Container("anyname_2_0");
 		$this->assertEquals(0, count($container));
 
-		$container = new Container("anyname_7");
+		$container = new Container("anyname_2_7");
 		$this->assertEquals(0, count($container));
 
 		for ($i = 1; $i <= 6; $i++)
 		    {
-			$container = new Container("anyname_" . $i);
+			$container = new Container("anyname_2_" . $i);
 			$this->assertEquals(2, count($container));
 		    }
 

@@ -152,6 +152,11 @@ class Container implements Iterator, Countable
 				    } //end if
 
 				$parallel = "_" . $parallel;
+				$name     = $this->_name . $parallel;
+				if (file_exists($this->_storage . "/" . $name) === false)
+				    {
+					mkdir($this->_storage . "/" . $name);
+				    } //end if
 
 			    } //end if
 
