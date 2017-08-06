@@ -64,15 +64,29 @@ class Container implements Iterator, Countable
 	private $_parallel = 1;
 
 	/**
+	 * Order limit
+	 *
+	 * @var int Limit
+	 */
+	private $_limit = 0;
+
+	/**
 	 * Prepare container to work
 	 *
-	 * @param string $name Name of current container
+	 * @param string $name      Name of current container
+	 * @param int    $parallels Count of parallels
+	 * @param int    $limit     Order limit
 	 *
 	 * @return void
 	 */
 
-	public function __construct(string $name, $parallels = 1)
+	public function __construct(string $name, int $parallels = 1, int $limit = 0)
 	    {
+		if ($limit > 0)
+		    {
+			$this->_limit = $limit;
+		    } //end if
+
 		$this->_throttler = new Throttler();
 
 		if (defined("CONTAINER_SENSOR") === true)
@@ -86,27 +100,46 @@ class Container implements Iterator, Countable
 
 		    } //end if
 
-
 		$this->_parallels = $parallels;
-
-		$this->_name    = $name;
-		$this->_storage = "/home/container/";
+		$this->_name      = $name;
+		$this->_storage   = "/home/container/";
 
 		if (defined("CONTAINER_DIR") === true)
 		    {
 			$this->_storage = CONTAINER_DIR;
 		    } //end if
 
-		if (file_exists($this->_storage . "/" . $this->_name) === false)
+		if (file_exists($this->_storage . "/" . $this->_name) === true)
 		    {
-			mkdir($this->_storage . "/" . $this->_name);
+			$this->_refreshOrder();
 		    } //end if
+
+	    } //end __construct()
+
+
+	/**
+	 * Refresh order
+	 *
+	 * @return void
+	 */
+
+	private function _refreshOrder()
+	    {
+		$this->_order = [];
+
+		$count = 0;
 
 		foreach (new DirectoryIterator($this->_storage . "/" . $this->_name) as $fileInfo)
 		    {
 			if($fileInfo->isDot() === false && (int) $fileInfo->getSize() !== 0 && $fileInfo->isDir() === false)
 			    {
 				$this->_order[] = $fileInfo->getFilename();
+				$count++;
+				if ($this->_limit > 0 && $count >= $this->_limit)
+				    {
+					break;
+				    } //end if
+
 			    }
 			else if ((int) $fileInfo->getSize() === 0)
 			    {
@@ -115,7 +148,7 @@ class Container implements Iterator, Countable
 
 		    } //end foreach
 
-	    } //end __construct()
+	    } //end _refreshOrder()
 
 
 	/**
@@ -201,19 +234,18 @@ class Container implements Iterator, Countable
 	private function _count(string $name):int
 	    {
 		$count = 0;
-		if (file_exists($this->_storage . "/" . $name) === false)
+		if (file_exists($this->_storage . "/" . $name) === true)
 		    {
-			mkdir($this->_storage . "/" . $name);
-		    } //end if
-
-		foreach (new DirectoryIterator($this->_storage . "/" . $name) as $fileInfo)
-		    {
-			if($fileInfo->isDot() === false && (int) $fileInfo->getSize() !== 0 && $fileInfo->isDir() === false)
+			foreach (new DirectoryIterator($this->_storage . "/" . $name) as $fileInfo)
 			    {
-				$count++;
-			    } //end if
+				if($fileInfo->isDot() === false && (int) $fileInfo->getSize() !== 0 && $fileInfo->isDir() === false)
+				    {
+					$count++;
+				    } //end if
 
-		    } //end foreach
+			    } //end foreach
+
+		    } //end if
 
 		return $count;
 	    } //end _count()
@@ -245,8 +277,24 @@ class Container implements Iterator, Countable
 
 	private function _addToStorage($data, string $parallel = "")
 	    {
-		$id             = sha1(uniqid());
-		$this->_order[] = $id;
+		if (file_exists($this->_storage . "/" . $this->_name . $parallel) === false)
+		    {
+			mkdir($this->_storage . "/" . $this->_name . $parallel);
+		    } //end if
+
+		$id = sha1(uniqid());
+		if ($this->_limit > 0)
+		    {
+			if (count($this->_order) < $this->_limit)
+			    {
+				$this->_order[] = $id;
+			    } //end if
+
+		    }
+		else
+		    {
+			$this->_order[] = $id;
+		    } //end if
 
 		$datetime = new DateTime("now", new DateTimezone("UTC"));
 

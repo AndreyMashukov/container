@@ -117,7 +117,7 @@ class ContainerTest extends TestCase
 		    {
 			$now = new DateTime("now", new DateTimezone("UTC"));
 			$this->assertEquals($expected[$i], $element["data"]);
-			$this->assertEquals($now, $element["creation_time"]);
+			$this->assertEquals($now->format("d-m-Y H:i"), $element["creation_time"]->format("d-m-Y H:i"));
 			$this->assertEquals(40, strlen($element["id"]));
 			$this->assertEquals($i, $key);
 			$container->remove($key);
@@ -126,6 +126,32 @@ class ContainerTest extends TestCase
 
 		$this->assertEquals(0, count($container));
 		
+	    } //end testShouldAddElement()
+
+
+	/**
+	 * Should allow to add order count limit
+	 *
+	 * @return void
+	 */
+
+	public function testShouldAllowToAddOrderCountLimit()
+	    {
+		$container = new Container("anyname", 1, 10);
+		for ($i = 0; $i < 20; $i++)
+		    {
+			$this->assertTrue($container->add("first"));
+		    } //end for
+
+		$this->assertEquals(10, count($container));
+		$i = 0;
+		foreach ($container as $key => $element)
+		    {
+			$this->assertEquals(40, strlen($element["id"]));
+			$i++;
+		    }
+
+		$this->assertEquals(10, $i);
 	    } //end testShouldAddElement()
 
 
