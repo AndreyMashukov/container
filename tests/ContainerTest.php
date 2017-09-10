@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests;
+namespace AM\Tests;
 
-use \AdService\Container;
+use \AM\Container\Container;
 use \DateTime;
 use \DateTimezone;
 use \PHPUnit\Framework\TestCase;

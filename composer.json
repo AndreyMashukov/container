@@ -13,18 +13,17 @@
     ],
     "autoload" : {
         "psr-4" : {
-            "AdService\\": ["src"]
+            "AM\\Container\\": ["src"]
         }
     },
     "require": {
         "php": ">=5.6",
-        "ext-dom": "*",
         "ext-zlib": "*",
         "andrey-mashukov/throttler": "^1.0"
     },
     "autoload-dev" : {
         "psr-4" : {
-            "AdService\\": ["tests"]
+            "AM\\Tests\\": ["tests"]
         }
     },
     "require-dev": {

@@ -1,30 +1,29 @@
 <?php
 
-namespace AdService;
+namespace AM\Container;
 
+use \AM\Container\FilesStorage;
 use \Countable;
 use \LoadBalance\Sensors\Sensor;
 use \LoadBalance\Throttler;
 use \DateTime;
 use \DateTimezone;
-use \DirectoryIterator;
-use \DOMDocument;
 use \Iterator;
 
 class Container implements Iterator, Countable
     {
 
 	/**
-	 * Name of container
+	 * Container name
 	 *
-	 * @var string Container name
+	 * @var string Name of container
 	 */
 	private $_name;
 
 	/**
 	 * Storage
 	 *
-	 * @var string Storage path
+	 * @var Storage data storage
 	 */
 	private $_storage;
 
@@ -34,13 +33,6 @@ class Container implements Iterator, Countable
 	 * @var int Parallels
 	 */
 	private $_parallels;
-
-	/**
-	 * Order
-	 *
-	 * @var array Order
-	 */
-	private $_order = [];
 
 	/**
 	 * Position for iterator
@@ -64,13 +56,6 @@ class Container implements Iterator, Countable
 	private $_parallel = 1;
 
 	/**
-	 * Order limit
-	 *
-	 * @var int Limit
-	 */
-	private $_limit = 0;
-
-	/**
 	 * Prepare container to work
 	 *
 	 * @param string $name      Name of current container
@@ -82,6 +67,8 @@ class Container implements Iterator, Countable
 
 	public function __construct(string $name, int $parallels = 1, int $limit = 0)
 	    {
+		$this->_name = $name;
+
 		if ($limit > 0)
 		    {
 			$this->_limit = $limit;
@@ -101,54 +88,13 @@ class Container implements Iterator, Countable
 		    } //end if
 
 		$this->_parallels = $parallels;
-		$this->_name      = $name;
-		$this->_storage   = "/home/container/";
 
-		if (defined("CONTAINER_DIR") === true)
+		if (defined("CONTAINER_STORAGE") === false)
 		    {
-			$this->_storage = CONTAINER_DIR;
-		    } //end if
-
-		if (file_exists($this->_storage . "/" . $this->_name) === true)
-		    {
-			$this->_refreshOrder();
+			$this->_storage = new FilesStorage($name, $limit);
 		    } //end if
 
 	    } //end __construct()
-
-
-	/**
-	 * Refresh order
-	 *
-	 * @return void
-	 */
-
-	private function _refreshOrder()
-	    {
-		$this->_order = [];
-
-		$count = 0;
-
-		foreach (new DirectoryIterator($this->_storage . "/" . $this->_name) as $fileInfo)
-		    {
-			if($fileInfo->isDot() === false && (int) $fileInfo->getSize() !== 0 && $fileInfo->isDir() === false)
-			    {
-				$this->_order[] = $fileInfo->getFilename();
-				$count++;
-				if ($this->_limit > 0 && $count >= $this->_limit)
-				    {
-					break;
-				    } //end if
-
-			    }
-			else if ((int) $fileInfo->getSize() === 0)
-			    {
-				unlink($this->_storage . "/" . $this->_name . "/" . $fileInfo->getFilename());
-			    } //end if
-
-		    } //end foreach
-
-	    } //end _refreshOrder()
 
 
 	/**
@@ -185,11 +131,6 @@ class Container implements Iterator, Countable
 				    } //end if
 
 				$parallel = "_" . $parallel;
-				$name     = $this->_name . $parallel;
-				if (file_exists($this->_storage . "/" . $name) === false)
-				    {
-					mkdir($this->_storage . "/" . $name);
-				    } //end if
 
 			    } //end if
 
@@ -233,21 +174,7 @@ class Container implements Iterator, Countable
 
 	private function _count(string $name):int
 	    {
-		$count = 0;
-		if (file_exists($this->_storage . "/" . $name) === true)
-		    {
-			foreach (new DirectoryIterator($this->_storage . "/" . $name) as $fileInfo)
-			    {
-				if($fileInfo->isDot() === false && (int) $fileInfo->getSize() !== 0 && $fileInfo->isDir() === false)
-				    {
-					$count++;
-				    } //end if
-
-			    } //end foreach
-
-		    } //end if
-
-		return $count;
+		return $this->_storage->count($name);
 	    } //end _count()
 
 
@@ -259,9 +186,10 @@ class Container implements Iterator, Countable
 
 	public function clear()
 	    {
-		foreach ($this->_order as $key => $id)
+		$order = $this->_storage->getOrder();
+		foreach ($order as $key => $id)
 		    {
-			$this->remove($key);
+			$this->_storage->removeElement($key);
 		    } //end foreach
 
 	    } //end clear()
@@ -277,40 +205,15 @@ class Container implements Iterator, Countable
 
 	private function _addToStorage($data, string $parallel = "")
 	    {
-		if (file_exists($this->_storage . "/" . $this->_name . $parallel) === false)
-		    {
-			mkdir($this->_storage . "/" . $this->_name . $parallel);
-		    } //end if
-
-		$id = sha1(uniqid());
-		if ($this->_limit > 0)
-		    {
-			if (count($this->_order) < $this->_limit)
-			    {
-				$this->_order[] = $id;
-			    } //end if
-
-		    }
-		else
-		    {
-			$this->_order[] = $id;
-		    } //end if
-
 		$datetime = new DateTime("now", new DateTimezone("UTC"));
 
 		$element = array(
-			    "id"            => $id,
 			    "creation_time" => $datetime->format("d.m.Y H:i:s"),
 			    "data"          => $data,
 			    "container"     => $this->_name . $parallel,
 			   );
 
-		do
-		    {
-			file_put_contents($this->_storage . "/" . $this->_name . $parallel . "/" . $id, gzencode(serialize($element)));
-			$infile = unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . $parallel .  "/" . $id)));
-		    } while ($infile !== $element);
-
+		$this->_storage->addElement($element, $parallel);
 	    } //end addToStorage()
 
 
@@ -337,16 +240,14 @@ class Container implements Iterator, Countable
 	/**
 	 * Remove element
 	 *
-	 * @param $index Element id
+	 * @param int $index Element index
 	 *
 	 * @return void
 	 */
 
-	public function remove($index)
+	public function remove(int $index)
 	    {
-		$id = $this->_order[$index];
-		unset($this->_order[$index]);
-		unlink($this->_storage . "/" . $this->_name . "/" . $id);
+		$this->_storage->removeElement($index);
 	    } //end remove()
 
 
@@ -371,8 +272,7 @@ class Container implements Iterator, Countable
 	public function current():array
 	    {
 		$this->_throttler->run();
-		$id = $this->_order[$this->_position];
-		return $this->_convertTime(unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . "/" . $id))));
+		return $this->_convertTime($this->_storage->getByPosition($this->_position));
 	    } //end current()
 
 
@@ -408,7 +308,7 @@ class Container implements Iterator, Countable
 
 	public function valid():bool
 	    {
-		return isset($this->_order[$this->_position]);
+		return $this->_storage->isset($this->_position);
 	    } //end valid()
 
 
@@ -420,7 +320,7 @@ class Container implements Iterator, Countable
 
 	public function count():int
 	    {
-		return count($this->_order);
+		return $this->_storage->count();
 	    } //end count()
 
 
