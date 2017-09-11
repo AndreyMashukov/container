@@ -92,6 +92,11 @@ class Container implements Iterator, Countable
 		if (defined("CONTAINER_STORAGE") === false)
 		    {
 			$this->_storage = new FilesStorage($name, $limit);
+		    }
+		else
+		    {
+			$storage = CONTAINER_STORAGE;
+			$this->_storage = new $storage($name, $limit);
 		    } //end if
 
 	    } //end __construct()
@@ -110,7 +115,7 @@ class Container implements Iterator, Countable
 	    {
 		if ($this->_parallels === 1)
 		    {
-			$this->_addToStorage($data);
+			return $this->_addToStorage($data);
 		    }
 		else
 		    {
@@ -134,11 +139,11 @@ class Container implements Iterator, Countable
 
 			    } //end if
 
-			$this->_addToStorage($data, $parallel);
+			return $this->_addToStorage($data, $parallel);
 
 		    } //end if
 
-		return true;
+		return false;
 	    } //end add()
 
 
@@ -200,10 +205,10 @@ class Container implements Iterator, Countable
 	 *
 	 * @param mixed $data Data to save
 	 *
-	 * @return void
+	 * @return bool result
 	 */
 
-	private function _addToStorage($data, string $parallel = "")
+	private function _addToStorage($data, string $parallel = ""):bool
 	    {
 		$datetime = new DateTime("now", new DateTimezone("UTC"));
 
@@ -213,7 +218,7 @@ class Container implements Iterator, Countable
 			    "container"     => $this->_name . $parallel,
 			   );
 
-		$this->_storage->addElement($element, $parallel);
+		return $this->_storage->addElement($element, $parallel);
 	    } //end addToStorage()
 
 

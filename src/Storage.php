@@ -37,10 +37,10 @@ abstract class Storage
 	 * @param array  $data   Element
 	 * @param string $suffix Container name suffix
 	 *
-	 * @return void
+	 * @return bool Add status
 	 */
 
-	abstract public function addElement(array $data, string $suffix);
+	abstract public function addElement(array $data, string $suffix):bool;
 
 
 	/**

@@ -2,9 +2,9 @@
 
 namespace AM\Container;
 
-use \DirectoryIterator;
+use \Logics\Foundation\HTTP\HTTPclient;
 
-class FilesStorage extends Storage
+class QueueServerStorage extends Storage
     {
 
 	/**
@@ -46,21 +46,10 @@ class FilesStorage extends Storage
 
 	public function __construct(string $name, int $limit = 0)
 	    {
-		$this->_order   = [];
 		$this->_limit   = $limit;
 		$this->_name    = $name;
-		$this->_storage = "/home/container/";
-
-		if (defined("CONTAINER_DIR") === true)
-		    {
-			$this->_storage = CONTAINER_DIR;
-		    } //end if
-
-		if (file_exists($this->_storage . "/" . $name) === true)
-		    {
-			$this->_refreshOrder();
-		    } //end if
-
+		$this->_storage = QUEUE_SERVER;
+		$this->_refreshOrder();
 	    } //end __construct()
 
 
@@ -82,38 +71,33 @@ class FilesStorage extends Storage
 	 * @param array  $element Element
 	 * @param string $suffix Container name suffix
 	 *
-	 * @return bool Status
+	 * @return bool status
 	 */
 
 	public function addElement(array $element, string $suffix):bool
 	    {
-		$element["id"] = sha1(uniqid());
+		$http  = new HTTPclient($this->_storage . "/api/queue/add.json", [
+		    "key"            => API_KEY,
+		    "container_name" => $this->_name . "_" . CONTAINER_SALT,
+		    "data"           => json_encode($element),
+		]);
 
-		if (file_exists($this->_storage . "/" . $this->_name . $suffix) === false)
+		$response = json_decode($http->post(), true);
+		if ($response["status"] === "ok")
 		    {
-			mkdir($this->_storage . "/" . $this->_name . $suffix);
-		    } //end if
-
-		if ($this->_limit > 0)
-		    {
-			if (count($this->_order) < $this->_limit)
+			if ($this->_limit === 0)
 			    {
-				$this->_order[] = $element["id"];
+				$this->_order[] = $response["hash"];
+			    }
+			else if (count($this->_order) < $this->_limit)
+			    {
+				$this->_order[] = $response["hash"];
 			    } //end if
 
-		    }
-		else
-		    {
-			$this->_order[] = $element["id"];
+			return true;
 		    } //end if
 
-		do
-		    {
-			file_put_contents($this->_storage . "/" . $this->_name . $suffix . "/" . $element["id"], gzencode(serialize($element)));
-			$infile = unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . $suffix .  "/" . $element["id"])));
-		    } while ($infile !== $element);
-
-		return true;
+		return false;
 	    } //end addElement()
 
 
@@ -129,7 +113,11 @@ class FilesStorage extends Storage
 	    {
 		$id = $this->_order[$index];
 		unset($this->_order[$index]);
-		unlink($this->_storage . "/" . $this->_name . "/" . $id);
+
+		$http  = new HTTPclient($this->_storage . "/api/queue/del.json", [
+		    "key"  => API_KEY,
+		    "hash" => $id,
+		]);
 
 		return true;
 	    } //end removeElement()
@@ -146,7 +134,18 @@ class FilesStorage extends Storage
 	public function getByPosition(int $position):array
 	    {
 		$id = $this->_order[$position];
-		return unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . "/" . $id)));
+		$http  = new HTTPclient($this->_storage . "/api/queue/element/get.json", [
+		    "key"  => API_KEY,
+		    "hash" => $id,
+		]);
+
+		$response = json_decode($http->post(), true);
+		if ($response["status"] === "ok")
+		    {
+			$response["data"]["id"] = $id;
+			return $response["data"];
+		    } //end if
+
 	    } //end getByPosition()
 
 
@@ -176,25 +175,15 @@ class FilesStorage extends Storage
 
 		$count = 0;
 
-		foreach (new DirectoryIterator($this->_storage . "/" . $this->_name) as $fileInfo)
+		$http  = new HTTPclient($this->_storage . "/api/queue/order/get.json", ["key" => API_KEY, "container_name" => $this->_name . "_" . CONTAINER_SALT]);
+		$order = json_decode($http->post(), true);
+
+		if ($this->_limit > 0)
 		    {
-			if($fileInfo->isDot() === false && (int) $fileInfo->getSize() !== 0 && $fileInfo->isDir() === false)
-			    {
-				$this->_order[] = $fileInfo->getFilename();
-				$count++;
-				if ($this->_limit > 0 && $count >= $this->_limit)
-				    {
-					break;
-				    } //end if
+			$order = array_slice($order, 0, $this->_limit);
+		    } //end if
 
-			    }
-			else if ((int) $fileInfo->getSize() === 0)
-			    {
-				unlink($this->_storage . "/" . $this->_name . "/" . $fileInfo->getFilename());
-			    } //end if
-
-		    } //end foreach
-
+		$this->_order = $order;
 	    } //end _refreshOrder()
 
 
