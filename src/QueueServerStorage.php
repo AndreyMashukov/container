@@ -208,19 +208,10 @@ class QueueServerStorage extends Storage
 
 		if ($name !== "")
 		    {
-			if (file_exists($this->_storage . "/" . $name) === true)
-			    {
-				foreach (new DirectoryIterator($this->_storage . "/" . $name) as $fileInfo)
-				    {
-					if($fileInfo->isDot() === false && (int) $fileInfo->getSize() !== 0 && $fileInfo->isDir() === false)
-					    {
-						$count++;
-					    } //end if
+			$http  = new HTTPclient($this->_storage . "/api/queue/order/get.json", ["key" => API_KEY, "container_name" => $name . "_" . CONTAINER_SALT]);
+			$order = json_decode($http->post(), true);
 
-				    } //end foreach
-
-			    } //end if
-
+			$count = count($order);
 		    }
 		else
 		    {
