@@ -138,7 +138,6 @@ class QueueServerStorage extends Storage
 		    "key"  => API_KEY,
 		    "hash" => $id,
 		]);
-
 		$response = json_decode($http->post(), true);
 
 		if ($response["status"] === "ok")
