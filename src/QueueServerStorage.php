@@ -78,7 +78,7 @@ class QueueServerStorage extends Storage
 	    {
 		$http  = new HTTPclient($this->_storage . "/api/queue/add.json", [
 		    "key"            => API_KEY,
-		    "container_name" => $this->_name . "_" . CONTAINER_SALT,
+		    "container_name" => $this->_name . $suffix . "_" . CONTAINER_SALT,
 		    "data"           => json_encode($element),
 		]);
 
@@ -140,10 +140,13 @@ class QueueServerStorage extends Storage
 		]);
 
 		$response = json_decode($http->post(), true);
+
 		if ($response["status"] === "ok")
 		    {
-			$response["data"]["id"] = $id;
-			return $response["data"];
+			$data       = json_decode($response["data"], true);
+			$data["id"] = $id;
+
+			return $data;
 		    } //end if
 
 	    } //end getByPosition()
@@ -183,7 +186,11 @@ class QueueServerStorage extends Storage
 			$order = array_slice($order, 0, $this->_limit);
 		    } //end if
 
-		$this->_order = $order;
+		foreach ($order as $item)
+		    {
+			$this->_order[] = $item["hash"];
+		    } //end foreach
+
 	    } //end _refreshOrder()
 
 
