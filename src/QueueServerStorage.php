@@ -118,6 +118,7 @@ class QueueServerStorage extends Storage
 		    "key"  => API_KEY,
 		    "hash" => $id,
 		]);
+		$http->post();
 
 		return true;
 	    } //end removeElement()
