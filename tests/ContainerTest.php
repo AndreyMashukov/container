@@ -137,7 +137,6 @@ class ContainerTest extends TestCase
 
 	public function testShouldAllowToAddOrderCountLimit()
 	    {
-		exit();
 		$container = new Container("anyname", 1, 10);
 		for ($i = 0; $i < 20; $i++)
 		    {
@@ -312,22 +311,23 @@ class ContainerTest extends TestCase
 		$load    = sys_getloadavg();
 		$current = $load[0];
 
-		if ($current <= 15)
+		$cores  = 1;
+		$result = shell_exec("nproc");
+		if ($result > 0)
 		    {
-			$expected = 0;
+			$cores = (int) $result;
 		    }
-		else if ($current > 15 && $current <= 30)
+
+		$log = log10($current / $cores);
+
+		if ($log > 0)
 		    {
-			$expected = 5;
-		    }
-		else if ($current > 30 && $current <= 50)
-		    {
-			$expected = 10;
+			$expected = round($log * 60);
 		    }
 		else
 		    {
-			$expected = 60;
-		    } //end if
+			$expected = 0;
+		    }
 
 		$time = time();
 		$exp  = $time + $expected;
@@ -341,6 +341,40 @@ class ContainerTest extends TestCase
 
 		$this->assertEquals($exp, $secondtime);
 	    } //end ShouldAllowMakeProcessAsDecideTheCpuSensor()
+
+
+	/**
+	 * Should save duplicates of file for recover if base file is invalid
+	 *
+	 * @return void
+	 */
+
+	public function testShouldSaveDuplicatesOfFileForRecoverIfBaseFileIsInvalid()
+	    {
+		define("CONTAINER_DIR", __DIR__ . "/container");
+		$container = new Container("anyname");
+
+		for ($i = 0; $i < 12; $i++)
+		    {
+			$container->add("data" . $i);
+		    }
+
+		$expected = [];
+		foreach ($container as $element)
+		    {
+			$this->assertTrue(file_exists(__DIR__ . "/container/" . $element["container"] . "/" . $element["id"]));
+			file_put_contents(__DIR__ . "/container/" . $element["container"] . "/" . $element["id"], "invalid data");
+			$expected[] = $element;
+		    } //end foreach
+
+		$i = 0;
+		foreach ($container as $element)
+		    {
+			$this->assertEquals($expected[$i], $element);
+			$i++;
+		    } //end foreach
+
+	    } //end testShouldSaveDuplicatesOfFileForRecoverIfBaseFileIsInvalid()
 
 
     } //end class

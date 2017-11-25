@@ -56,6 +56,22 @@ class FilesStorage extends Storage
 			$this->_storage = CONTAINER_DIR;
 		    } //end if
 
+		$dirs = [
+		    $this->_storage,
+		    $this->_storage . "/recover_data",
+		    $this->_storage . "/recover_data/" . $name,
+		];
+
+		foreach ($dirs as $dir)
+		    {
+			if (file_exists($dir) === false)
+			    {
+				mkdir($dir);
+			    } //end if
+
+		    } //end foreach
+
+
 		if (file_exists($this->_storage . "/" . $name) === true)
 		    {
 			$this->_refreshOrder();
@@ -111,10 +127,38 @@ class FilesStorage extends Storage
 		    {
 			file_put_contents($this->_storage . "/" . $this->_name . $suffix . "/" . $element["id"], gzencode(serialize($element)));
 			$infile = unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . $suffix .  "/" . $element["id"])));
+
+			$this->_makeRecoverData(serialize($infile), $element["id"], $suffix);
 		    } while ($infile !== $element);
 
 		return true;
 	    } //end addElement()
+
+
+	/**
+	 * Make recover data file
+	 *
+	 * @param string $content Content to file
+	 * @param string $id      File id
+	 * @param string $suffix  Suffix to filename
+	 *
+	 * @return void
+	 */
+
+	private function _makeRecoverData(string $content, string $id, string $suffix)
+	    {
+		while (true)
+		    {
+			file_put_contents($this->_storage . "/recover_data/" . $this->_name . $suffix . "/" . $id, $content);
+			$infile = file_get_contents($this->_storage . "/recover_data/" . $this->_name . $suffix . "/" . $id);
+			if ($infile === $content)
+			    {
+				break;
+			    } //end if
+
+		    } //end while
+
+	    } //end _makeRecoverData()
 
 
 	/**
@@ -130,6 +174,7 @@ class FilesStorage extends Storage
 		$id = $this->_order[$index];
 		unset($this->_order[$index]);
 		unlink($this->_storage . "/" . $this->_name . "/" . $id);
+		unlink($this->_storage . "/recover_data/" . $this->_name . "/" . $id);
 
 		return true;
 	    } //end removeElement()
@@ -145,8 +190,18 @@ class FilesStorage extends Storage
 
 	public function getByPosition(int $position):array
 	    {
-		$id = $this->_order[$position];
-		return unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . "/" . $id)));
+		$id      = $this->_order[$position];
+		@$result = unserialize(gzdecode(file_get_contents($this->_storage . "/" . $this->_name . "/" . $id)));
+
+		if ($result === false)
+		    {
+			$recovered = unserialize(file_get_contents($this->_storage . "/recover_data/" . $this->_name . "/" . $id));
+			unlink($this->_storage . "/" . $this->_name . "/" . $id);
+
+			return (($recovered === false) ? [] : $recovered);
+		    } //end if
+
+		return $result;
 	    } //end getByPosition()
 
 
