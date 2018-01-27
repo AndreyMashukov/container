@@ -18,6 +18,7 @@
     },
     "require": {
         "ext-json": "*",
+        "ext-sqlite3": "*",
         "php": ">=5.6",
         "ext-zlib": "*",
         "andrey-mashukov/throttler": "^1.0"
