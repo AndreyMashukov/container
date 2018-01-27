@@ -67,6 +67,7 @@ class SQLiteStorage extends Storage
 		    } //end if
 
 		$this->_db = new SQLite3($this->_storage . "/container.db", (SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE));
+		$this->_db->busyTimeout(500);
 
 		$this->_refreshOrder();
 	    } //end __construct()
@@ -207,8 +208,16 @@ class SQLiteStorage extends Storage
 				);
 			    }
 
-			$row = $result->fetchArray(SQLITE3_ASSOC);
-			return $row["count"];
+			if ($result !== false)
+			    {
+				$row = $result->fetchArray(SQLITE3_ASSOC);
+				return $row["count"];
+			    }
+			else
+			    {
+				return 0;
+			    }
+
 		    }
 		else
 		    {
@@ -254,16 +263,25 @@ class SQLiteStorage extends Storage
 		    "SELECT COUNT(message_id) as count FROM " . $containername . " " .
 		    "WHERE message_id = '" . $this->_db->escapeString($messageid) . "'");
 
-		$row = $result->fetchArray(SQLITE3_ASSOC);
-
-		if ((int) $row["count"] !== 0)
-		    {
-			return true;
-		    }
-		else
+		if ($result === false)
 		    {
 			return false;
 		    }
+		else
+		    {
+			$row = $result->fetchArray(SQLITE3_ASSOC);
+
+			if ((int) $row["count"] !== 0)
+			    {
+				return true;
+			    }
+			else
+			    {
+				return false;
+			    } //end if
+
+		    } //end if
+
 	    } //end _isset()
 
 
@@ -293,13 +311,15 @@ class SQLiteStorage extends Storage
 			);
 		    }
 
-
-		while ($row = $result->fetchArray(SQLITE3_ASSOC))
+		if ($result !== false)
 		    {
-			if ($this->_limit > 0 && count($order) < $this->_limit || $this->_limit === 0)
+			while ($row = $result->fetchArray(SQLITE3_ASSOC))
 			    {
-				$order[] = $row["message_id"];
-			    } //end if
+				if ($this->_limit > 0 && count($order) < $this->_limit || $this->_limit === 0)
+				    {
+					$order[] = $row["message_id"];
+				    } //end if
+			    }
 
 		    }
 
