@@ -5,7 +5,6 @@ namespace AM\Container;
 use \DateTime;
 use \DateTimezone;
 use \DirectoryIterator;
-use \SQLite3;
 
 class SQLiteStorage extends Storage
     {
@@ -13,7 +12,7 @@ class SQLiteStorage extends Storage
 	/**
 	 * Database
 	 *
-	 * @var SQLdatabase
+	 * @var PDO
 	 */
 	private $_db;
 
@@ -66,8 +65,7 @@ class SQLiteStorage extends Storage
 			$this->_storage = CONTAINER_DIR;
 		    } //end if
 
-		$this->_db = new SQLite3($this->_storage . "/container.db", (SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE));
-		$this->_db->busyTimeout(500);
+		$this->_db = new \PDO('sqlite:' . $this->_storage . '/container.db');
 
 		$this->_refreshOrder();
 	    } //end __construct()
@@ -108,9 +106,9 @@ class SQLiteStorage extends Storage
 			    "contents," .
 			    "creationtime," .
 			    "message_id) VALUES (" .
-			    "'" . $this->_db->escapeString(json_encode($element)) . "'," .
+			    $this->_db->quote(json_encode($element)) . "," .
 			    "'" . $this->_formatDateTime($time) . "'," .
-			    "'" . $this->_db->escapeString($element["id"]) . "')"
+			    $this->_db->quote($element["id"]) . ")"
 			);
 		    }
 
@@ -136,7 +134,7 @@ class SQLiteStorage extends Storage
 		$id = $this->_order[$index];
 		$this->_db->exec(
 		    "DELETE FROM " . $this->_name . " " .
-		    "WHERE message_id = '" . $this->_db->escapeString($id) . "'"
+		    "WHERE message_id = " . $this->_db->quote($id)
 		);
 
 		return true;
@@ -159,10 +157,9 @@ class SQLiteStorage extends Storage
 		    "contents, " .
 		    "creationtime " .
 		    "FROM " . $this->_name . " " .
-		    "WHERE message_id = '" . $id . "'");
+		    "WHERE message_id = " . $this->_db->quote($id));
 
-		$row = $result->fetchArray(SQLITE3_ASSOC);
-
+		$row = $result->fetch();
 		return json_decode($row["contents"], true);
 	    } //end getByPosition()
 
@@ -210,7 +207,7 @@ class SQLiteStorage extends Storage
 
 			if ($result !== false)
 			    {
-				$row = $result->fetchArray(SQLITE3_ASSOC);
+				$row = $result->fetch();
 				return $row["count"];
 			    }
 			else
@@ -261,7 +258,7 @@ class SQLiteStorage extends Storage
 	    {
 		$result = $this->_db->query(
 		    "SELECT COUNT(message_id) as count FROM " . $containername . " " .
-		    "WHERE message_id = '" . $this->_db->escapeString($messageid) . "'");
+		    "WHERE message_id = " . $this->_db->quote($messageid));
 
 		if ($result === false)
 		    {
@@ -269,7 +266,7 @@ class SQLiteStorage extends Storage
 		    }
 		else
 		    {
-			$row = $result->fetchArray(SQLITE3_ASSOC);
+			$row = $result->fetch();
 
 			if ((int) $row["count"] !== 0)
 			    {
@@ -313,7 +310,7 @@ class SQLiteStorage extends Storage
 
 		if ($result !== false)
 		    {
-			while ($row = $result->fetchArray(SQLITE3_ASSOC))
+			foreach ($result as $row)
 			    {
 				if ($this->_limit > 0 && count($order) < $this->_limit || $this->_limit === 0)
 				    {
